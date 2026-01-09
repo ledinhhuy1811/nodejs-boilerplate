@@ -15,6 +15,7 @@ import logger from "./configs/logger";
 import { exitHandler, unexpectedErrorHandler } from "./utils/system";
 import { connectCosmosClient } from "./services/cosmosClient";
 import { connectDb } from "./services/prisma";
+import { connectWebhookClient } from "./services/discord";
 
 const app = express();
 const server = http.createServer(app);
@@ -73,6 +74,9 @@ server.listen(PORT, async () => {
 
   // connect to database
   await connectDb();
+
+  // connect to discord
+  await connectWebhookClient();
 
   // Handle process events
   process.on("uncaughtException", unexpectedErrorHandler);

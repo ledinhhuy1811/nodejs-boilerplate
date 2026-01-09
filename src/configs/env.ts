@@ -23,6 +23,9 @@ const envVarSchema = Joi.object()
 
     // api key
     API_KEY: Joi.string().required(),
+
+    // discord
+    DISCORD_WEBHOOK_URL: Joi.string().required(),
   })
   .unknown();
 
@@ -53,4 +56,7 @@ export default {
 
   // api key
   apiKey: envVars.API_KEY,
+
+  // discord
+  discordWebhookUrl: envVars.DISCORD_WEBHOOK_URL,
 };
