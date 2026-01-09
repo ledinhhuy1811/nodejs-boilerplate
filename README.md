@@ -10,8 +10,10 @@ A production-ready Node.js backend boilerplate built with Express, TypeScript, P
 - **Cosmos SDK Integration** - Built-in support for Oraichain blockchain interactions
 - **Swagger/OpenAPI** - Interactive API documentation
 - **Winston Logging** - Structured logging with daily rotation
+- **Discord Integration** - Webhook notifications for alerts and monitoring
 - **Authentication** - API key-based authentication middleware
 - **Error Handling** - Centralized error handling with custom exceptions
+- **Retry Logic** - Built-in retry utility for resilient operations
 - **Security** - Helmet, CORS, compression, and cookie parsing
 - **Docker Support** - PostgreSQL database containerization
 - **Environment Validation** - Joi-based environment variable validation
@@ -43,6 +45,7 @@ A production-ready Node.js backend boilerplate built with Express, TypeScript, P
 - **Winston** ^3.19.0 - Logging
 - **Winston Daily Rotate File** ^5.0.0 - Log rotation
 - **Swagger UI Express** ^5.0.1 - API documentation
+- **Discord.js** ^14.25.1 - Discord webhook notifications
 - **Joi** ^18.0.2 - Validation
 - **Helmet** ^8.1.0 - Security headers
 - **Morgan** ^1.10.1 - HTTP request logger
@@ -74,6 +77,7 @@ nodejs-boilerplate/
 │   ├── routes/             # Express routes
 │   ├── services/           # External services
 │   │   ├── cosmosClient.ts # Cosmos SDK client
+│   │   ├── discord.ts      # Discord webhook client
 │   │   └── prisma.ts       # Prisma client
 │   ├── swaggers/           # OpenAPI YAML definitions
 │   ├── utils/              # Utility functions
@@ -124,6 +128,9 @@ nodejs-boilerplate/
    ENCRYPTED_MNEMONIC=your_encrypted_mnemonic_here
    PASSWORD=your_decryption_password_here
    API_KEY=your_api_key_here
+
+   # Discord
+   DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/your_webhook_url
    ```
 
 4. **Start the database**
@@ -147,15 +154,16 @@ nodejs-boilerplate/
 
 ### Environment Variables
 
-| Variable             | Description                               | Required | Default            |
-| -------------------- | ----------------------------------------- | -------- | ------------------ |
-| `NODE_ENV`           | Environment (production/development/test) | Yes      | -                  |
-| `PORT`               | Server port                               | No       | 8000               |
-| `DATABASE_URL`       | PostgreSQL connection string              | Yes      | -                  |
-| `ORAI_RPC_URL`       | Oraichain RPC endpoint                    | No       | http://rpc.orai.io |
-| `ENCRYPTED_MNEMONIC` | Encrypted blockchain mnemonic             | Yes      | -                  |
-| `PASSWORD`           | Password for mnemonic decryption          | Yes      | -                  |
-| `API_KEY`            | API key for authentication                | Yes      | -                  |
+| Variable              | Description                               | Required | Default            |
+| --------------------- | ----------------------------------------- | -------- | ------------------ |
+| `NODE_ENV`            | Environment (production/development/test) | Yes      | -                  |
+| `PORT`                | Server port                               | No       | 8000               |
+| `DATABASE_URL`        | PostgreSQL connection string              | Yes      | -                  |
+| `ORAI_RPC_URL`        | Oraichain RPC endpoint                    | No       | http://rpc.orai.io |
+| `ENCRYPTED_MNEMONIC`  | Encrypted blockchain mnemonic             | Yes      | -                  |
+| `PASSWORD`            | Password for mnemonic decryption          | Yes      | -                  |
+| `API_KEY`             | API key for authentication                | Yes      | -                  |
+| `DISCORD_WEBHOOK_URL` | Discord webhook URL for notifications     | Yes      | -                  |
 
 ### Encrypting Mnemonic
 
@@ -284,6 +292,23 @@ yarn db:generate
 - Console output with colorization
 - Automatic log compression and retention (14 days)
 
+### Retry Logic
+
+- Built-in retry utility with configurable attempts (default: 3)
+- Automatic exponential backoff (2 seconds between retries)
+- Error logging for each retry attempt
+
+Use the retry utility:
+
+```typescript
+import { retryFunction } from "./utils/retry";
+
+const error = await retryFunction(async () => {
+  // Your async operation
+  await someAsyncOperation();
+});
+```
+
 ## 🔐 Authentication
 
 The boilerplate includes API key authentication middleware. Protect routes by adding the middleware:
@@ -313,6 +338,33 @@ Access the client globally:
 
 ```typescript
 import { cosmosClient, cosmosAddress } from "./services/cosmosClient";
+```
+
+## 🔔 Discord Notifications
+
+The application includes Discord webhook integration for sending notifications:
+
+- **Webhook Client**: Automatically connects on server startup
+- **Rich Embeds**: Color-coded notifications (info, error, warning)
+- **Server Context**: Includes environment information in notifications
+
+Send notifications:
+
+```typescript
+import { sendDiscordNotification } from "./services/discord";
+
+await sendDiscordNotification(
+  "Alert Title",
+  "Alert description",
+  "Additional content",
+  "error" // or "info" | "warning"
+);
+```
+
+Access the client globally:
+
+```typescript
+import { discordClient } from "./services/discord";
 ```
 
 ## 📦 Database Schema
@@ -374,3 +426,5 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 - Logs are automatically rotated daily and compressed
 - BigInt values are automatically serialized to strings in JSON responses
 - The application gracefully handles SIGTERM and SIGINT signals for clean shutdowns
+- Discord webhook client connects automatically on server startup
+- Retry utility provides resilient error handling for async operations
