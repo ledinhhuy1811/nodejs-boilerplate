@@ -1,4 +1,4 @@
-# Node.js Boilerplate
+# Node.js Boilerplates
 
 A production-ready Node.js backend boilerplate built with Express, TypeScript, Prisma, and Cosmos SDK integration. This boilerplate provides a solid foundation for building scalable REST APIs with database management, authentication, logging, and blockchain integration.
 
